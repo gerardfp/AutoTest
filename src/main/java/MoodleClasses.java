@@ -6,6 +6,11 @@ class Token {
 
 }
 
+class Student {
+    String id;
+    String username;
+}
+
 class Assignments {
     List<Assignment> assignments;
 }
@@ -32,4 +37,18 @@ class Filearea {
 class MFile {
     String filename;
     String fileurl;
+}
+
+
+class Courses {
+    List<Course> courses;
+}
+
+class Course {
+    List<PAssignment> assignments;
+}
+
+class PAssignment {
+    String id;
+    String cmid;
 }
