@@ -11,6 +11,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
 
+
+/*
+ Descomentar y rellenar
+*/
 //class Config {
 //    static String baseUrl = "https://moodle.elpuig.xeill.net/";
 //    static String username = "$$$$$$$$$$$$$$$$$$";
@@ -26,6 +30,7 @@ import java.util.regex.Pattern;
 //
 //    static String carpetaTestCases = "/home/gerard/AutoTest/testcases/";
 //}
+
 
 public class Main {
     static MoodleAPI api;
@@ -44,7 +49,6 @@ public class Main {
                 .build()
                 .create(MoodleAPI.class);
 
-
         login();
     }
 
@@ -58,8 +62,8 @@ public class Main {
     }
 
     private static void getStudents(){
+        System.out.println("obteniendo students...");
         api.students(token, Config.courseId).enqueue((RCallback<List<Student>>) (call, response) -> {
-            System.out.println("obteniendo students...");
             response.body().forEach(s -> id2username.put(s.id, s.username));
 
             getAssignmentId();
@@ -67,8 +71,8 @@ public class Main {
     }
 
     private static void getAssignmentId(){
+        System.out.println("obteniendo asignId...");
         api.courses(token, Config.courseId).enqueue((RCallback<Courses>) (call, response) -> {
-            System.out.println("obteniendo asignId...");
             response.body().courses.forEach(c -> c.assignments.forEach(a -> { if(a.cmid.equals(Config.assignId)) assignId = a.id; }));
 
             getSubmissions();
@@ -92,7 +96,7 @@ public class Main {
 
                 try {
                     File file = new File(folder + f.filename);
-//                    Request.Get(f.fileurl + "?token="+token).execute().saveContent(file);
+                    Request.Get(f.fileurl + "?token="+token).execute().saveContent(file);
                     compileAndCreateTestScript(file);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -126,10 +130,11 @@ public class Main {
         contents = Pattern.compile("package .*;\n").matcher(contents).replaceAll("");
         FileUtils.writeStringToFile(file, contents);
 
-
+        // Compilar
         System.out.println("   Compilando: " + Config.javac + " " + absolutePath);
         Runtime.getRuntime().exec(Config.javac + " " + absolutePath);
 
+        // Añadir el test al script runtests.sh
         for (int i = 0; i < 1000; i++) {
             if(new File(Config.carpetaTestCases + baseName + "." + i + ".IN").isFile()) {
                 addLine(Config.java + " " + baseName + " < " + Config.carpetaTestCases + baseName + "." + i + ".IN > " + baseDir + baseName + "." + i + ".OUT");
