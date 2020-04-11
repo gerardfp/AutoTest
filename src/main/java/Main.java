@@ -1,48 +1,33 @@
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.http.client.fluent.Request;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
-import java.util.regex.Pattern;
 
 
-/*
- Descomentar y rellenar
-*/
-//class Config {
-//    static String baseUrl = "https://moodle.elpuig.xeill.net/";
-//    static String username = "$$$$$$$$$$$$$$$$$$";
-//    static String password = "$$$$$$$$$$$$$$$$$$";
-//
-//    static String courseId = "260";
-//    static String assignId = "45396";
-//
-//    static String carpeta = "submissions/";
-//
-//    static String javac = "/home/gerard/idea-IC-183.5912.21/jdk-13.0.1/bin/javac";
-//    static String java = "/home/gerard/idea-IC-183.5912.21/jdk-13.0.1/bin/java";
-//
-//    static String carpetaTestCases = "/home/gerard/AutoTest/testcases/";
-//}
+class Config {
+    static String baseUrl = "https://moodle.elpuig.xeill.net/";
+    static String username = "$$$$$$$";
+    static String password = "$$$$$$$";
+    static String courseId = "260";
+    static String assignId = "45396";
+
+    static String carpetaDescarga = "descargas/";
+}
 
 
 public class Main {
-    static MoodleAPI api;
+    private static MoodleAPI api;
 
-    static String token;
-    static String assignId;
-    static HashMap<String, String> id2username = new HashMap<>();
-    static File runtests = new File("runtests.sh");
-    static String runtestScript = "";
+    private static String token;
+    private static String assignId;
+    private static HashMap<String, String> id2username = new HashMap<>();
 
     public static void main(String[] args) {
-        System.out.println("Start");
+        System.out.println("start");
         api =  new Retrofit.Builder()
                 .baseUrl(Config.baseUrl)
                 .addConverterFactory(GsonConverterFactory.create())
@@ -53,9 +38,10 @@ public class Main {
     }
 
     private static void login(){
-        api.login(Config.username, Config.password).enqueue((RCallback<Token>) (call, response) -> {
-            System.out.println("TOKEN = " + response.body().token);
-            token = response.body().token;
+        System.out.println("login...");
+        api.login(Config.username, Config.password).enqueue((Callback<Token>) response -> {
+            System.out.println("TOKEN = " + response.token);
+            token = response.token;
 
             getStudents();
         });
@@ -63,8 +49,8 @@ public class Main {
 
     private static void getStudents(){
         System.out.println("obteniendo students...");
-        api.students(token, Config.courseId).enqueue((RCallback<List<Student>>) (call, response) -> {
-            response.body().forEach(s -> id2username.put(s.id, s.username));
+        api.students(token, Config.courseId).enqueue((Callback<List<Student>>) response -> {
+            response.forEach(s -> id2username.put(s.id, s.username));
 
             getAssignmentId();
         });
@@ -72,8 +58,8 @@ public class Main {
 
     private static void getAssignmentId(){
         System.out.println("obteniendo asignId...");
-        api.courses(token, Config.courseId).enqueue((RCallback<Courses>) (call, response) -> {
-            response.body().courses.forEach(c -> c.assignments.forEach(a -> { if(a.cmid.equals(Config.assignId)) assignId = a.id; }));
+        api.courses(token, Config.courseId).enqueue((Callback<Courses>) response -> {
+            response.courses.forEach(c -> c.assignments.forEach(a -> { if(a.cmid.equals(Config.assignId)) assignId = a.id; }));
 
             getSubmissions();
         });
@@ -81,15 +67,13 @@ public class Main {
 
     private static void getSubmissions() {
         System.out.println("obteniendo submissions...");
-        api.submissions(token, assignId).enqueue((RCallback<Assignments>) (call, response) -> response.body().assignments.get(0).submissions.forEach(s -> {
+        api.submissions(token, assignId).enqueue((Callback<Assignments>) response -> response.assignments.get(0).submissions.forEach(s -> {
 
-            System.out.println(s.userid + " -> " + id2username.get(s.userid));
+            String username = id2username.get(s.userid);
+            System.out.println(s.userid + " -> " + username);
 
-            String folder = Config.carpeta + id2username.get(s.userid) + "/";
-            File baseDir = new File(folder);
-            baseDir.mkdirs();
-
-            addLine("\n\ncd " + baseDir.getAbsolutePath());
+            String folder = Config.carpetaDescarga + username + "/";
+            new File(folder).mkdirs();
 
             s.plugins.get(0).fileareas.get(0).files.forEach(f -> {
                 System.out.println("    descargando " + f.fileurl + "&token="+token);
@@ -97,50 +81,10 @@ public class Main {
                 try {
                     File file = new File(folder + f.filename);
                     Request.Get(f.fileurl + "?token="+token).execute().saveContent(file);
-                    compileAndCreateTestScript(file);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             });
-
-            writeTestScript();
         }));
-    }
-
-    private static void writeTestScript(){
-        try {
-            FileUtils.writeStringToFile(runtests,runtestScript);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void addLine(String line) {
-        runtestScript += line + "\n";
-    }
-
-    private static void compileAndCreateTestScript(File file) throws IOException {
-        String absolutePath = file.getAbsolutePath();
-        String baseDir = FilenameUtils.getFullPath(absolutePath);
-        String baseName = FilenameUtils.getBaseName(absolutePath);
-
-
-        // Eliminar la linea "package" del codigo fuente
-        String contents = FileUtils.readFileToString(file, StandardCharsets.UTF_8.name());
-        contents = Pattern.compile("package .*;\n").matcher(contents).replaceAll("");
-        FileUtils.writeStringToFile(file, contents);
-
-        // Compilar
-        System.out.println("   Compilando: " + Config.javac + " " + absolutePath);
-        Runtime.getRuntime().exec(Config.javac + " " + absolutePath);
-
-        // Añadir el test al script runtests.sh
-        for (int i = 0; i < 1000; i++) {
-            if(new File(Config.carpetaTestCases + baseName + "." + i + ".IN").isFile()) {
-                addLine(Config.java + " " + baseName + " < " + Config.carpetaTestCases + baseName + "." + i + ".IN > " + baseDir + baseName + "." + i + ".OUT");
-            } else {
-                break;
-            }
-        }
     }
 }

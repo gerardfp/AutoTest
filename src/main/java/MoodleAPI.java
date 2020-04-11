@@ -21,6 +21,4 @@ public interface MoodleAPI {
 
     @GET("webservice/rest/server.php?wsfunction=mod_assign_get_submissions&moodlewsrestformat=json")
     Call<Assignments> submissions(@Query("wstoken") String wstoken, @Query("assignmentids[0]") String asssignId);
-
-
 }
