@@ -16,6 +16,8 @@ class Assignments {
 }
 
 class Assignment {
+    public String id;
+    public String cmid;
     public String assignmentid;
     public List<Submission> submissions;
 }
@@ -24,6 +26,7 @@ class Submission {
     String id;
     String userid;
     List<Plugin> plugins;
+    String gradingstatus;
 }
 
 class Plugin {
@@ -42,13 +45,26 @@ class MFile {
 
 class Courses {
     List<Course> courses;
+    List<Assignment> assignments;
 }
 
 class Course {
+    String id;
     List<PAssignment> assignments;
 }
 
 class PAssignment {
     String id;
     String cmid;
+}
+
+class Discusiones {
+    List<Discusion> discussions;
+}
+
+class Discusion {
+    int id;
+    String name;
+    String subject;
+    String message;
 }
