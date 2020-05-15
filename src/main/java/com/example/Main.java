@@ -1,3 +1,5 @@
+package com.example;
+
 import okhttp3.*;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -82,7 +84,7 @@ public class Main {
     }
 
 //    private static void getDiscussions(){
-//        api.discussions(token, Config.forumid).enqueue((Callback<Discusiones>) response -> {
+//        api.discussions(token, Config.forumid).enqueue((com.example.Callback<com.example.Discusiones>) response -> {
 //            response.discussions.forEach(d -> System.out.format("%s%n%s%n%s%n%s%n-----%n", d.id, d.name, d.message, d.subject));
 //        });
 //    }
@@ -90,7 +92,7 @@ public class Main {
 
 
 //    private static void getSubmissions(){
-//        api.submissions(token, assignIds).enqueue((Callback<Assignments>) response -> {
+//        api.submissions(token, assignIds).enqueue((com.example.Callback<com.example.Assignments>) response -> {
 //            response.assignments.forEach(a ->{
 //                a.submissions.forEach(s -> {
 //                    if(s.gradingstatus.equals("notgraded")){
@@ -102,7 +104,7 @@ public class Main {
 //    }
 //    private static void getStudents(){
 //        System.out.println("obteniendo students...");
-//        api.students(token, Config.courseId).enqueue((Callback<List<Student>>) response -> {
+//        api.students(token, Config.courseId).enqueue((com.example.Callback<List<com.example.Student>>) response -> {
 //            response.forEach(s -> id2username.put(s.id, s.username));
 //
 //            getAssignmentId();
@@ -111,7 +113,7 @@ public class Main {
 //
 //    private static void getAssignmentId(){
 //        System.out.println("obteniendo asignId...");
-//        api.courses(token, Config.courseId).enqueue((Callback<Courses>) response -> {
+//        api.courses(token, Config.courseId).enqueue((com.example.Callback<com.example.Courses>) response -> {
 //            response.courses.forEach(c -> c.assignments.forEach(a -> { if(a.cmid.equals(Config.assignId)) assignId = a.id; }));
 //
 //            getSubmissions();
@@ -120,7 +122,7 @@ public class Main {
 //
 //    private static void getSubmissions() {
 //        System.out.println("obteniendo submissions...");
-//        api.submissions(token, assignId).enqueue((Callback<Assignments>) response -> response.assignments.get(0).submissions.forEach(s -> {
+//        api.submissions(token, assignId).enqueue((com.example.Callback<com.example.Assignments>) response -> response.assignments.get(0).submissions.forEach(s -> {
 //
 //            String username = id2username.get(s.userid);
 //            System.out.println(s.userid + " -> " + username);

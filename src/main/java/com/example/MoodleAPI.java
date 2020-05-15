@@ -1,3 +1,5 @@
+package com.example;
+
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
@@ -14,7 +16,7 @@ public interface MoodleAPI {
     Call<List<Student>> students(@Query("wstoken") String wstoken, @Query("courseid") String courseId);
 
 //    @GET("webservice/rest/server.php?wsfunction=mod_assign_get_assignments&moodlewsrestformat=json")
-//    Call<Courses> courses(@Query("wstoken") String wstoken);
+//    Call<com.example.Courses> courses(@Query("wstoken") String wstoken);
 
     @GET("webservice/rest/server.php?wsfunction=mod_assign_get_assignments")
     Call<Courses> courses(@Query("wstoken") String wstoken, @Query("courseids[0]") String courseid);
