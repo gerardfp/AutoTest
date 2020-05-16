@@ -66,28 +66,73 @@ public class Main {
     private static void getAssignments(String token){
 
         try {
-            api.assignments(token).execute().body().courses.forEach(course -> {
-                System.out.println();
-                System.out.println();
-                System.out.println(course.fullname);
+            Courses courses = api.assignments(token).execute().body();
 
+            courses.courses.forEach(course -> {
                 course.assignments.forEach(assignment -> {
-                    System.out.println();
-                    System.out.println("\t" + assignment.name);
-
                     try {
                         api.submissions(token, assignment.id).execute().body().assignments.forEach(assignment1 -> {
-                            assignment1.submissions.forEach(submission -> {
-                                if(submission.gradingstatus.equals("notgraded")){
-                                    System.out.println("\t\thttps://moodle.elpuig.xeill.net/mod/assign/view.php?id=" + assignment.cmid +"&rownum=0&action=grader&userid="+ submission.userid);
-                                }
-                            });
+                            assignment.submissions = assignment1.submissions;
+
+//                            assignment1.submissions.forEach(submission -> {
+//                                if(submission.gradingstatus.equals("notgraded")){
+//                                    System.out.println("\t\thttps://moodle.elpuig.xeill.net/mod/assign/view.php?id=" + assignment.cmid +"&rownum=0&action=grader&userid="+ submission.userid);
+//                                }
+//                            });
                         });
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 });
             });
+
+            courses.courses.forEach(course -> {
+                course.assignments.removeIf(assignment -> {
+                    if(assignment.submissions != null) {
+                        for (Submission submission : assignment.submissions) {
+                            if (submission.gradingstatus.equals("notgraded")) {
+                                return false;
+                            }
+                        }
+                    }
+                    return true;
+                });
+            });
+
+            courses.courses.removeIf(course -> {
+               if(course.assignments.size() > 0){
+                   return false;
+               }
+                return true;
+            });
+            //            courses.courses.removeIf(course -> {
+//                for(Assignment assignment:course.assignments){
+//                    for(Submission submission:assignment.submissions){
+//                        if(submission.gradingstatus.equals("notgraded")){
+//                            return false;
+//                        }
+//                    }
+//                }
+//                return true;
+//            });
+//
+
+            for(Course course:courses.courses){
+                System.out.println();
+                System.out.println();
+                System.out.println(course.fullname);
+                for(Assignment assignment:course.assignments){
+                    System.out.println();
+                    System.out.println("\t"+assignment.name);
+                    if(assignment.submissions != null) {
+                        for (Submission submission : assignment.submissions) {
+                            if (submission.gradingstatus.equals("notgraded")) {
+                                System.out.println("\t\thttps://moodle.elpuig.xeill.net/mod/assign/view.php?id=" + assignment.cmid + "&rownum=0&action=grader&userid=" + submission.userid);
+                            }
+                        }
+                    }
+                }
+            }
 
         } catch (IOException e) {
             e.printStackTrace();

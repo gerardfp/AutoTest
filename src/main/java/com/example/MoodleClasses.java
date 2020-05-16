@@ -21,6 +21,7 @@ class Assignment {
     public String id;
     public String cmid;
     public String assignmentid;
+    public String name;
     public List<Submission> submissions;
 }
 
@@ -53,7 +54,7 @@ class Courses {
 class Course {
     String id;
     String fullname;
-    List<PAssignment> assignments;
+    List<Assignment> assignments;
 }
 
 class PAssignment {
