@@ -17,7 +17,7 @@ public class Main {
 //    private static HashMap<String, String> id2username = new HashMap<>();
 
     public static void main(String[] args) {
-        System.out.println("start");
+//        System.out.println("start");
         api =  new Retrofit.Builder()
                 .baseUrl("https://moodle.elpuig.xeill.net/")
                 .client(new OkHttpClient.Builder()
@@ -55,24 +55,57 @@ public class Main {
         System.out.println("Moodle password: ");
         String password = scanner.nextLine();
 
-        System.out.println("login...");
+//        System.out.println("login...");
         api.login(username, password).enqueue((Callback<Token>) response -> {
-            System.out.println("TOKEN = " + response.token);
+//            System.out.println("TOKEN = " + response.token);
 
             getAssignments(response.token);
         });
     }
 
     private static void getAssignments(String token){
-        api.assignments(token).enqueue((Callback<Courses>) response -> {
-            response.courses.forEach(c -> c.assignments.forEach( a -> {
-                getSubmissions(token, a.id, a.cmid);
-            }));
-        });
+
+        try {
+            api.assignments(token).execute().body().courses.forEach(course -> {
+                System.out.println();
+                System.out.println();
+                System.out.println(course.fullname);
+
+                course.assignments.forEach(assignment -> {
+                    System.out.println();
+                    System.out.println("\t" + assignment.name);
+
+                    try {
+                        api.submissions(token, assignment.id).execute().body().assignments.forEach(assignment1 -> {
+                            assignment1.submissions.forEach(submission -> {
+                                if(submission.gradingstatus.equals("notgraded")){
+                                    System.out.println("\t\thttps://moodle.elpuig.xeill.net/mod/assign/view.php?id=" + assignment.cmid +"&rownum=0&action=grader&userid="+ submission.userid);
+                                }
+                            });
+                        });
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+            });
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+//        api.assignments(token).enqueue((Callback<Courses>) response -> {
+//            response.courses.forEach(c -> {
+//                c.assignments.forEach(a -> {
+//                    getSubmissions(token, a.id, a.cmid, c.fullname, a.name);
+//                });
+//            });
+//        });
     }
 
-    private static void getSubmissions(String token, String assignId, String assignCmid){
+    private static void getSubmissions(String token, String assignId, String assignCmid, String courseName, String assignmentName){
         api.submissions(token, assignId).enqueue((Callback<Assignments>) response -> {
+            System.out.println("\t" + courseName);
+            System.out.println("\t\t" + assignmentName);
             response.assignments.forEach(a ->{
                 a.submissions.forEach(s -> {
                     if(s.gradingstatus.equals("notgraded")){

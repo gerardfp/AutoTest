@@ -52,12 +52,14 @@ class Courses {
 
 class Course {
     String id;
+    String fullname;
     List<PAssignment> assignments;
 }
 
 class PAssignment {
     String id;
     String cmid;
+    String name;
 }
 
 class Discusiones {
