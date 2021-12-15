@@ -13,7 +13,7 @@ public class Main {
 
     public static void main(String[] args) {
         api =  new Retrofit.Builder()
-                .baseUrl("https://moodle.elpuig.xeill.net/")
+                .baseUrl("https://moodle.escoladeltreball.org/")
                 .client(new OkHttpClient.Builder()
                     .addInterceptor(chain -> {
                         Request original = chain.request();
